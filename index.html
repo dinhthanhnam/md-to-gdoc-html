@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown to Google Docs Converter</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Syntax highlighting link that will be dynamically swapped -->
+  <link id="syntax-theme-link" rel="stylesheet" href="atom-one-dark.min.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+
+  <header>
+    <h1 class="app-title">
+      📝 MD to Google Docs Styled Converter
+    </h1>
+    <div class="controls-top">
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.3rem 0.7rem; border-radius: 6px; border: 1px solid var(--border-color);">
+        <label for="syntax-theme-select" style="font-size: 0.8rem; color: var(--text-muted);">Code Theme:</label>
+        <select id="syntax-theme-select" style="width: auto; padding: 0.2rem 0.5rem; border: none; background: transparent; color: white;">
+          <option value="atom-one-dark.min.css">Atom One Dark</option>
+          <option value="monokai.min.css">Monokai</option>
+          <option value="github-dark.min.css">GitHub Dark</option>
+          <option value="github.min.css">GitHub Light</option>
+        </select>
+      </div>
+      <button id="reset-btn" class="btn btn-secondary">
+        🔄 Reset
+      </button>
+      <button id="copy-btn" class="btn btn-success">
+        📋 Copy Formatting
+      </button>
+    </div>
+  </header>
+
+  <div class="main-container">
+    
+    <!-- Sidebar: Settings -->
+    <aside class="sidebar">
+      
+      <!-- Normal / Body Text -->
+      <section class="sidebar-section">
+        <h3>Normal Text</h3>
+        <div class="setting-group">
+          <label for="body-font">Font Family</label>
+          <select id="body-font">
+            <option value="Arial">Arial</option>
+            <option value="Calibri">Calibri</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <label for="body-size">Size (pt)</label>
+              <input type="number" id="body-size" min="8" max="24" step="0.5">
+            </div>
+            <div style="flex: 1;">
+              <label for="body-height">Line Height</label>
+              <input type="number" id="body-height" min="1" max="2.5" step="0.1">
+            </div>
+            <div style="flex: 0 0 auto;">
+              <label for="body-color">Color</label>
+              <input type="color" id="body-color">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Heading 1 -->
+      <section class="sidebar-section">
+        <h3>Heading 1</h3>
+        <div class="setting-group">
+          <label for="h1-font">Font Family</label>
+          <select id="h1-font">
+            <option value="Arial">Arial</option>
+            <option value="Calibri">Calibri</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <label for="h1-size">Size (pt)</label>
+              <input type="number" id="h1-size" min="10" max="36" step="0.5">
+            </div>
+            <div style="flex: 0 0 auto;">
+              <label for="h1-color">Color</label>
+              <input type="color" id="h1-color">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Heading 2 -->
+      <section class="sidebar-section">
+        <h3>Heading 2</h3>
+        <div class="setting-group">
+          <label for="h2-font">Font Family</label>
+          <select id="h2-font">
+            <option value="Arial">Arial</option>
+            <option value="Calibri">Calibri</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <label for="h2-size">Size (pt)</label>
+              <input type="number" id="h2-size" min="10" max="28" step="0.5">
+            </div>
+            <div style="flex: 0 0 auto;">
+              <label for="h2-color">Color</label>
+              <input type="color" id="h2-color">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Heading 3 -->
+      <section class="sidebar-section">
+        <h3>Heading 3</h3>
+        <div class="setting-group">
+          <label for="h3-font">Font Family</label>
+          <select id="h3-font">
+            <option value="Arial">Arial</option>
+            <option value="Calibri">Calibri</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <label for="h3-size">Size (pt)</label>
+              <input type="number" id="h3-size" min="9" max="24" step="0.5">
+            </div>
+            <div style="flex: 0 0 auto;">
+              <label for="h3-color">Color</label>
+              <input type="color" id="h3-color">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Inline Code -->
+      <section class="sidebar-section">
+        <h3>Inline Code</h3>
+        <div class="setting-group">
+          <label for="inline-font">Font Family</label>
+          <select id="inline-font">
+            <option value="Courier New">Courier New</option>
+            <option value="Consolas">Consolas</option>
+            <option value="monospace">System Monospace</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <label for="inline-color">Text Color</label>
+              <input type="color" id="inline-color">
+            </div>
+            <div style="flex: 1;">
+              <label for="inline-bg">Bg Color</label>
+              <input type="color" id="inline-bg">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Code Block -->
+      <section class="sidebar-section">
+        <h3>Code Block</h3>
+        <div class="setting-group">
+          <label for="codeblock-font">Font Family</label>
+          <select id="codeblock-font">
+            <option value="Courier New">Courier New</option>
+            <option value="Consolas">Consolas</option>
+            <option value="monospace">System Monospace</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <label for="codeblock-padding">Padding (rem)</label>
+              <input type="number" id="codeblock-padding" min="0.2" max="3" step="0.1">
+            </div>
+            <div style="flex: 1;">
+              <label for="codeblock-radius">Radius (px)</label>
+              <input type="number" id="codeblock-radius" min="0" max="20" step="1">
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Blockquote -->
+      <section class="sidebar-section">
+        <h3>Blockquote</h3>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <label for="quote-border">Border Color</label>
+              <input type="color" id="quote-border">
+            </div>
+            <div style="flex: 1;">
+              <label for="quote-bg">Bg Color</label>
+              <input type="color" id="quote-bg">
+            </div>
+            <div style="flex: 1;">
+              <label for="quote-color">Text Color</label>
+              <input type="color" id="quote-color">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Links -->
+      <section class="sidebar-section">
+        <h3>Links</h3>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <label for="link-color">Color</label>
+              <input type="color" id="link-color">
+            </div>
+            <div style="flex: 2; display: flex; align-items: center; gap: 0.5rem; margin-top: 1.25rem;">
+              <input type="checkbox" id="link-underline" style="width: auto; cursor: pointer;">
+              <label for="link-underline" style="margin: 0; cursor: pointer; user-select: none;">Underline</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- Editor Pane -->
+    <div class="editor-pane">
+      <div class="pane-header">
+        <span>Markdown Input</span>
+      </div>
+      <textarea id="markdown-input" class="markdown-textarea" placeholder="Nhập mã Markdown tại đây..."></textarea>
+    </div>
+
+    <!-- Preview Pane -->
+    <div class="preview-pane">
+      <div class="pane-header">
+        <span>Google Docs Live Preview</span>
+      </div>
+      <div class="preview-scroll-container">
+        <div id="preview" class="gdoc-page">
+          <!-- Rendered content goes here -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Vendor Scripts -->
+  <script src="marked.min.js"></script>
+  <script src="highlight.min.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    // Set a default markdown example to make it interactive at first load
+    document.getElementById('markdown-input').value = `# Tiêu đề Heading 1 (Arial 17pt)
+
+Đây là văn bản bình thường (Normal text) có chứa một đoạn \`some text\` (inline code với nền xám và chữ xám đậm) nằm ở đây.
+
+## Tiêu đề Heading 2 (Arial 14pt)
+
+Bạn có thể thêm liên kết [Google Docs](https://docs.google.com) hoặc danh sách công việc:
+* Lập trình Python
+* Xây dựng giao diện Web
+* Tự động hóa công việc
+
+> Đây là một blockquote (đoạn trích dẫn) được định dạng tùy chỉnh với viền xanh và nền xanh nhạt, giúp nội dung nổi bật hơn.
+
+### Tiêu đề Heading 3 (Arial 12pt)
+
+Dưới đây là một khối code Python với theme được highlight tự động:
+
+\`\`\`python
+def hello_world():
+    # In ra câu chào
+    message = "Hello, Google Docs!"
+    print(message)
+    return True
+\`\`\`
+
+Và một file cấu hình YAML:
+
+\`\`\`yaml
+version: '3.8'
+services:
+  web:
+    image: node:alpine
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+\`\`\`
+`;
+  </script>
+</body>
+</html>
