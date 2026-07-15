@@ -436,13 +436,17 @@ function codeHtmlToLinePs(codeElement, fontFamily, fontSize, baseColor) {
     'white-space: pre',
   ].join('; ') + ';';
 
-  return htmlLines.map(html => {
+  // Use a single <p> with <br> between lines instead of multiple <p> tags.
+  // Google Docs adds its own paragraph spacing between <p> tags, causing
+  // excessive vertical spacing in code blocks. <br> avoids this issue.
+  const lineContents = htmlLines.map(html => {
     if (html.trim().length === 0) {
-      return `<p style="${lineStyle}">&nbsp;</p>`;
+      return '\u00A0'; // &nbsp; for empty lines
     }
-    const preserved = preserveLeadingSpaces(html);
-    return `<p style="${lineStyle}">${preserved}</p>`;
-  }).join('');
+    return preserveLeadingSpaces(html);
+  });
+
+  return `<p style="${lineStyle}">${lineContents.join('<br>')}</p>`;
 }
 
 // ============================================================================
