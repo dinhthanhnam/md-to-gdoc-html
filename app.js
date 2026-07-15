@@ -453,6 +453,125 @@ function codeHtmlToLinePs(codeElement, fontFamily, fontSize, baseColor) {
 // Markdown Rendering
 // ============================================================================
 
+/**
+ * Post-process lists that contain code-block tables.
+ *
+ * Google Docs cannot handle <table> elements inside <li> — it corrupts the
+ * list numbering and indentation.  This function "explodes" such lists:
+ *
+ *   <ol>                              <ol>
+ *     <li>plain</li>                    <li>plain</li>
+ *     <li>                            </ol>
+ *       text                          <p>6. text</p>
+ *       <table>…</table>    →         <table>…</table>
+ *       more text                     <p>more text</p>
+ *     </li>                           <ol start="7">
+ *     <li>next</li>                     <li>next</li>
+ *   </ol>                             </ol>
+ *
+ * Plain items (no table inside) stay in the list; items with tables are
+ * pulled out as standalone paragraphs between two list segments.
+ */
+function flattenListsWithTables(container) {
+  for (const list of Array.from(container.querySelectorAll('ol, ul'))) {
+    // Skip nested lists — we only process top-level lists.
+    // (Nested lists inside an <li> are handled when we process that <li>'s
+    // content below.)
+    if (list.parentElement.tagName === 'LI') continue;
+
+    const items = Array.from(list.children).filter(c => c.tagName === 'LI');
+    const hasTableInAnyItem = items.some(li => li.querySelector('.gdoc-code-table'));
+    if (!hasTableInAnyItem) continue;
+
+    const isOrdered = list.tagName === 'OL';
+    let startNum = parseInt(list.getAttribute('start'), 10) || 1;
+    const fragment = document.createDocumentFragment();
+
+    // Accumulate consecutive plain items into one list segment
+    let pendingPlainItems = [];
+
+    function flushPlainItems() {
+      if (pendingPlainItems.length === 0) return;
+      const seg = document.createElement(list.tagName);
+      if (isOrdered) seg.setAttribute('start', String(startNum));
+      for (const li of pendingPlainItems) {
+        seg.appendChild(li);
+        startNum++;
+      }
+      fragment.appendChild(seg);
+      pendingPlainItems = [];
+    }
+
+    for (const li of items) {
+      if (!li.querySelector('.gdoc-code-table')) {
+        // Plain item — accumulate
+        pendingPlainItems.push(li);
+        continue;
+      }
+
+      // --- This <li> contains at least one table ---
+      flushPlainItems();
+
+      // Walk the <li>'s direct children and emit them as siblings
+      const children = Array.from(li.childNodes);
+
+      // Collect leading text/inline nodes as the "label" (the numbered line)
+      let labelNodes = [];
+      let idx = 0;
+      for (; idx < children.length; idx++) {
+        const child = children[idx];
+        // Stop at the first block-level element (table, p, div, ul, ol, pre, blockquote)
+        if (child.nodeType === 1 &&
+            /^(TABLE|P|DIV|UL|OL|PRE|BLOCKQUOTE)$/i.test(child.tagName)) {
+          break;
+        }
+        labelNodes.push(child);
+      }
+
+      // Build a <p> for the label, with the number prefix if ordered
+      if (labelNodes.length > 0) {
+        const p = document.createElement('p');
+        if (isOrdered) {
+          const numSpan = document.createElement('span');
+          numSpan.textContent = `${startNum}. `;
+          numSpan.style.fontWeight = 'bold';
+          p.appendChild(numSpan);
+        }
+        for (const n of labelNodes) p.appendChild(n);
+        fragment.appendChild(p);
+      }
+
+      // Emit remaining children (tables, trailing text, nested lists, etc.)
+      for (; idx < children.length; idx++) {
+        const child = children[idx];
+
+        if (child.nodeType === 1 &&
+            /^(TABLE|UL|OL|PRE|BLOCKQUOTE|DIV)$/i.test(child.tagName)) {
+          // Block element — emit directly
+          fragment.appendChild(child);
+        } else if (child.nodeType === 1 && child.tagName === 'P') {
+          fragment.appendChild(child);
+        } else if (child.nodeType === 3 && child.textContent.trim().length > 0) {
+          // Wrap stray text in a <p>
+          const p = document.createElement('p');
+          p.textContent = child.textContent;
+          fragment.appendChild(p);
+        } else if (child.nodeType === 1) {
+          // Other inline elements (em, strong, code, a, etc.)
+          const p = document.createElement('p');
+          p.appendChild(child);
+          fragment.appendChild(p);
+        }
+      }
+
+      startNum++;
+    }
+
+    flushPlainItems();
+    list.parentNode.replaceChild(fragment, list);
+  }
+}
+
 function renderMarkdown() {
   const mdInput = document.getElementById('markdown-input');
   const preview = document.getElementById('preview');
@@ -507,6 +626,10 @@ function renderMarkdown() {
 
     pre.parentNode.replaceChild(table, pre);
   }
+
+  // After code blocks are converted to tables, break apart any lists
+  // that now contain tables — Google Docs can't handle tables inside <li>.
+  flattenListsWithTables(preview);
 }
 
 // ============================================================================
