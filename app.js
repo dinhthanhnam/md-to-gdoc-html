@@ -532,17 +532,15 @@ function flattenListsWithTables(container) {
         labelNodes.push(child);
       }
 
-      // Build a <p> for the label, with the number prefix if ordered
+      // Build a proper single-item list segment for the label so it keeps
+      // native list styling (bullet / number) instead of a manual <p>.
       if (labelNodes.length > 0) {
-        const p = document.createElement('p');
-        if (isOrdered) {
-          const numSpan = document.createElement('span');
-          numSpan.textContent = `${startNum}. `;
-          numSpan.style.fontWeight = 'bold';
-          p.appendChild(numSpan);
-        }
-        for (const n of labelNodes) p.appendChild(n);
-        fragment.appendChild(p);
+        const seg = document.createElement(list.tagName);
+        if (isOrdered) seg.setAttribute('start', String(startNum));
+        const newLi = document.createElement('li');
+        for (const n of labelNodes) newLi.appendChild(n);
+        seg.appendChild(newLi);
+        fragment.appendChild(seg);
       }
 
       // Emit remaining children (tables, trailing text, nested lists, etc.)
