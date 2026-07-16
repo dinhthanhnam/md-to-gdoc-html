@@ -84,6 +84,16 @@ h1.app-title {
   box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
 }
 
+.btn-accent {
+  background-color: var(--accent-color);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-accent:hover {
+  background-color: #4f46e5;
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.5);
+}
+
 .btn-secondary {
   background-color: transparent;
   border: 1px solid var(--border-color);

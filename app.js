@@ -232,6 +232,10 @@ function bindEvents() {
   // Action buttons
   document.getElementById('copy-btn')
     ?.addEventListener('click', performCopy);
+  document.getElementById('copy-html-btn')
+    ?.addEventListener('click', performCopyHtml);
+  document.getElementById('download-btn')
+    ?.addEventListener('click', performDownloadHtml);
   document.getElementById('reset-btn')
     ?.addEventListener('click', resetStyles);
 }
@@ -636,9 +640,9 @@ function renderMarkdown() {
 // Copy to Clipboard (inline all styles for Google Docs / Quill)
 // ============================================================================
 
-function performCopy() {
+function getStyledHtmlContent() {
   const preview = document.getElementById('preview');
-  if (!preview) return;
+  if (!preview) return '';
 
   const clone = preview.cloneNode(true);
   clone.style.cssText = `position:absolute; left:-9999px; top:-9999px; width:${CONFIG.copy.cloneWidth};`;
@@ -678,8 +682,88 @@ function performCopy() {
 
   const finalHtml = clone.innerHTML;
   document.body.removeChild(clone);
+  return finalHtml;
+}
 
-  copyRichText(finalHtml, preview.innerText);
+function performCopy() {
+  const preview = document.getElementById('preview');
+  if (!preview) return;
+  const html = getStyledHtmlContent();
+  copyRichText(html, preview.innerText);
+}
+
+function getWrappedHtmlDocument(html) {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Exported Document</title>
+  <style>
+    body {
+      padding: 2rem;
+      background-color: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .container {
+      background-color: #ffffff;
+      max-width: 800px;
+      width: 100%;
+      padding: 3.5rem 4rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    ${html}
+  </div>
+</body>
+</html>`;
+}
+
+async function performCopyHtml() {
+  const html = getStyledHtmlContent();
+  if (!html) return;
+  const wrapped = getWrappedHtmlDocument(html);
+
+  try {
+    await navigator.clipboard.writeText(wrapped);
+    showToast('Đã copy mã HTML thô vào bộ nhớ tạm!');
+  } catch (err) {
+    const textarea = document.createElement('textarea');
+    textarea.value = wrapped;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      showToast('Đã copy mã HTML thô (chế độ tương thích)!');
+    } catch {
+      alert('Không thể copy mã HTML. Vui lòng thử lại.');
+    }
+    document.body.removeChild(textarea);
+  }
+}
+
+function performDownloadHtml() {
+  const html = getStyledHtmlContent();
+  if (!html) return;
+  const wrapped = getWrappedHtmlDocument(html);
+
+  const blob = new Blob([wrapped], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'document.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Đã tải xuống file HTML thành công!');
 }
 
 async function copyRichText(html, plainText) {
